@@ -10,6 +10,7 @@ import java.awt.Point;
 import java.awt.Polygon;
 import java.awt.image.BufferedImage;
 import java.io.Serializable;
+import java.util.function.BooleanSupplier;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -29,8 +30,8 @@ public abstract class LogicGate implements Serializable {
 
 	private boolean deleted;
 
-	public LogicGate(Point location) {
-		this.location = new Point(location);
+	public LogicGate() {
+		this.location = new Point(-Integer.MAX_VALUE, -Integer.MAX_VALUE);
 		this.size = new Dimension(DEFAULT_SIZE.width, (int) (DEFAULT_SIZE.height / getAspectRatio()));
 		this.deleted = false;
 	}
@@ -70,14 +71,15 @@ public abstract class LogicGate implements Serializable {
 
 	abstract public JDialog getEditDialog(JFrame owner);
 
-	JComponent createEditDialogLowerBar(JDialog dialog, Runnable onSave) {
+	JComponent createEditDialogLowerBar(JDialog dialog, BooleanSupplier onSave) {
 		JPanel saveCancelDeleteLowerPanel = new JPanel();
 		saveCancelDeleteLowerPanel.setLayout(new BoxLayout(saveCancelDeleteLowerPanel, BoxLayout.X_AXIS));
 
 		JButton saveButton = new JButton("Save");
 		saveButton.addActionListener((event) -> {
-			onSave.run();
-			dialog.dispose();
+			if (onSave.getAsBoolean()) {
+				dialog.dispose();
+			}
 		});
 		saveCancelDeleteLowerPanel.add(saveButton);
 
@@ -116,6 +118,7 @@ public abstract class LogicGate implements Serializable {
 			}
 
 			if (gsp.getSignalWidth() > 1) {
+				g2d.setColor(Color.MAGENTA);
 				g2d.drawString(gsp.getSignalWidth() + "", relativePosition.x - 5, relativePosition.y - 2);
 			}
 		}

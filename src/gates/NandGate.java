@@ -23,9 +23,7 @@ public class NandGate extends LogicGate {
 
 	private final GateSignalPort input1, input2, output;
 
-	public NandGate(Point location) {
-		super(location);
-
+	public NandGate() {
 		input1 = new GateSignalPort(this, new Point(10, 30), Direction.INPUT);
 		input2 = new GateSignalPort(this, new Point(10, 70), Direction.INPUT);
 		output = new GateSignalPort(this, new Point(90, 50), Direction.OUTPUT);
@@ -119,6 +117,7 @@ public class NandGate extends LogicGate {
 			input1.setSignalWidth(newSignalWidth);
 			input2.setSignalWidth(newSignalWidth);
 			output.setSignalWidth(newSignalWidth);
+			return true;
 		}), BorderLayout.SOUTH);
 
 		dialog.add(outerPanel);

@@ -24,9 +24,7 @@ public class NotGate extends LogicGate {
 
 	private final GateSignalPort input, output;
 
-	public NotGate(Point position) {
-		super(position);
-
+	public NotGate() {
 		input = new GateSignalPort(this, new Point(10, 50), SignalComponent.Direction.INPUT);
 		output = new GateSignalPort(this, new Point(90, 50), SignalComponent.Direction.OUTPUT);
 	}
@@ -119,6 +117,7 @@ public class NotGate extends LogicGate {
 			int newSignalWidth = (int) dataWidthField.getModel().getValue();
 			input.setSignalWidth(newSignalWidth);
 			output.setSignalWidth(newSignalWidth);
+			return true;
 		}), BorderLayout.SOUTH);
 
 		dialog.add(outerPanel);

@@ -35,10 +35,8 @@ public class Input extends LogicGate {
 
 	private final GateSignalPort output;
 
-	public Input(Point position, String name) {
-		super(position);
-		this.name = name;
-
+	public Input() {
+		this.name = "ABC";
 		output = new GateSignalPort(this, new Point(90, 20), SignalComponent.Direction.OUTPUT);
 	}
 
@@ -87,7 +85,7 @@ public class Input extends LogicGate {
 		g2d.translate(0, -30);
 
 		FontMetrics fm = g2d.getFontMetrics();
-		int nameWidth = fm.stringWidth("ACB");
+		int nameWidth = fm.stringWidth("ABC");
 		g2d.drawString("ABC", (image.getWidth() / 2) - (nameWidth / 2) - 5,
 				(image.getHeight() / 2) + (fm.getDescent()));
 		g2d.dispose();
@@ -209,6 +207,7 @@ public class Input extends LogicGate {
 				newOutputSignal[i] = selected.equals("HIGH");
 			}
 			output.setSignal(newOutputSignal);
+			return true;
 		}), BorderLayout.SOUTH);
 
 		dialog.add(outerPanel);

@@ -2,6 +2,7 @@ package ui;
 
 import gates.AndGate;
 import gates.ComboGate;
+import gates.ConcatGate;
 import gates.Input;
 import gates.LogicGate;
 import gates.NandGate;
@@ -9,7 +10,7 @@ import gates.NorGate;
 import gates.NotGate;
 import gates.OrGate;
 import gates.Output;
-import gates.SplitterGate;
+import gates.SplitGate;
 import gates.XorGate;
 import main.GateLayout;
 import signals.SignalComponent;
@@ -30,6 +31,10 @@ import java.awt.event.KeyAdapter;
 import java.awt.event.KeyEvent;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
+import java.awt.event.MouseWheelEvent;
+import java.awt.event.MouseWheelListener;
+import java.awt.geom.AffineTransform;
+import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -37,6 +42,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -47,7 +53,7 @@ public class VerilogDrawerUI {
 
 	private GateLayout layout;
 	private MouseAction mouseAction;
-	private Point mouseLocation;
+	private Point mouseLocationOnPanel, mouseLocationOnPlane;
 
 	private final JFrame frame;
 
@@ -58,6 +64,9 @@ public class VerilogDrawerUI {
 		this.layout = layout;
 
 		mouseAction = new IdleAction();
+
+		mouseLocationOnPanel = new Point();
+		mouseLocationOnPlane = new Point();
 
 		frame = new JFrame("Verilog Drawer");
 
@@ -77,95 +86,16 @@ public class VerilogDrawerUI {
 
 		JPanel gateOptionsPanel = new JPanel(new GridLayout(0, 2));
 
-		JButton orGateButton = new JButton(new ImageIcon(OrGate.getPreviewImage()));
-		orGateButton.setHorizontalTextPosition(JButton.CENTER);
-		orGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		orGateButton.setText("OR");
-		orGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new OrGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(orGateButton);
-
-		JButton andGateButton = new JButton(new ImageIcon(AndGate.getPreviewImage()));
-		andGateButton.setHorizontalTextPosition(JButton.CENTER);
-		andGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		andGateButton.setText("AND");
-		andGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new AndGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(andGateButton);
-
-		JButton norGateButton = new JButton(new ImageIcon(NorGate.getPreviewImage()));
-		norGateButton.setHorizontalTextPosition(JButton.CENTER);
-		norGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		norGateButton.setText("NOR");
-		norGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new NorGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(norGateButton);
-
-		JButton nandGateButton = new JButton(new ImageIcon(NandGate.getPreviewImage()));
-		nandGateButton.setHorizontalTextPosition(JButton.CENTER);
-		nandGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		nandGateButton.setText("NAND");
-		nandGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new NandGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(nandGateButton);
-
-		JButton xorGateButton = new JButton(new ImageIcon(XorGate.getPreviewImage()));
-		xorGateButton.setHorizontalTextPosition(JButton.CENTER);
-		xorGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		xorGateButton.setText("XOR");
-		xorGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new XorGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(xorGateButton);
-
-		JButton notGateButton = new JButton(new ImageIcon(NotGate.getPreviewImage()));
-		notGateButton.setHorizontalTextPosition(JButton.CENTER);
-		notGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		notGateButton.setText("NOT");
-		notGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new NotGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(notGateButton);
-
-		JButton inputGateButton = new JButton(new ImageIcon(Input.getPreviewImage()));
-		inputGateButton.setHorizontalTextPosition(JButton.CENTER);
-		inputGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		inputGateButton.setText("INPUT");
-		inputGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new Input(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE), "ABC"));
-		});
-		gateOptionsPanel.add(inputGateButton);
-
-		JButton outputGateButton = new JButton(new ImageIcon(Output.getPreviewImage()));
-		outputGateButton.setHorizontalTextPosition(JButton.CENTER);
-		outputGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		outputGateButton.setText("OUTPUT");
-		outputGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new Output(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE), "XYZ"));
-		});
-		gateOptionsPanel.add(outputGateButton);
-		
-		JButton splitterGateButton = new JButton(new ImageIcon(SplitterGate.getPreviewImage()));
-		splitterGateButton.setHorizontalTextPosition(JButton.CENTER);
-		splitterGateButton.setVerticalTextPosition(JButton.BOTTOM);
-		splitterGateButton.setText("SPLITTER");
-		splitterGateButton.addActionListener((event) -> {
-			mouseAction.cancel();
-			mouseAction = new CreateGateAction(new SplitterGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE)));
-		});
-		gateOptionsPanel.add(splitterGateButton);
+		gateOptionsPanel.add(createNewGateButton(OrGate.class, "OR"));
+		gateOptionsPanel.add(createNewGateButton(AndGate.class, "AND"));
+		gateOptionsPanel.add(createNewGateButton(NorGate.class, "NOR"));
+		gateOptionsPanel.add(createNewGateButton(NandGate.class, "NAND"));
+		gateOptionsPanel.add(createNewGateButton(XorGate.class, "XOR"));
+		gateOptionsPanel.add(createNewGateButton(NotGate.class, "NOT"));
+		gateOptionsPanel.add(createNewGateButton(Input.class, "INPUT"));
+		gateOptionsPanel.add(createNewGateButton(Output.class, "OUTPUT"));
+		gateOptionsPanel.add(createNewGateButton(SplitGate.class, "SPLIT"));
+		gateOptionsPanel.add(createNewGateButton(ConcatGate.class, "CONCAT"));
 
 		gateOptionsOuterPanel.add(gateOptionsPanel, BorderLayout.NORTH);
 
@@ -210,6 +140,29 @@ public class VerilogDrawerUI {
 				frame.repaint();
 			}
 		}, 0, 20);
+	}
+
+	private JButton createNewGateButton(Class<? extends LogicGate> gateType, String buttonText) {
+		try {
+			// No static inheritance in Java, reflect onto a static method we know exists
+			JButton newGateButton = new JButton(
+					new ImageIcon((BufferedImage) gateType.getMethod("getPreviewImage").invoke(null)));
+			newGateButton.setHorizontalTextPosition(JButton.CENTER);
+			newGateButton.setVerticalTextPosition(JButton.BOTTOM);
+			newGateButton.setText(buttonText);
+			newGateButton.addActionListener((event) -> {
+				mouseAction.cancel();
+				try {
+					// Reflect onto the nullary constructor we know is also there
+					mouseAction = new CreateGateAction(gateType.getConstructor().newInstance());
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			});
+			return newGateButton;
+		} catch (Exception e) {
+			throw new RuntimeException(e);
+		}
 	}
 
 	private void update() {
@@ -301,8 +254,7 @@ public class VerilogDrawerUI {
 					friendlyName = friendlyName.substring(0, friendlyName.length() - 8);
 				}
 
-				ComboGate comboGate = new ComboGate(new Point(Integer.MIN_VALUE, Integer.MIN_VALUE), friendlyName,
-						importedLayout);
+				ComboGate comboGate = new ComboGate(friendlyName, importedLayout);
 
 				mouseAction.cancel();
 				mouseAction = new CreateGateAction(comboGate);
@@ -327,6 +279,7 @@ public class VerilogDrawerUI {
 			MouseHandler mh = new MouseHandler();
 			this.addMouseListener(mh);
 			this.addMouseMotionListener(mh);
+			this.addMouseWheelListener(mh);
 		}
 
 		@Override
@@ -336,6 +289,8 @@ public class VerilogDrawerUI {
 
 			g2d.setColor(Color.WHITE);
 			g2d.fillRect(0, 0, getWidth(), getHeight());
+
+			g2d.transform(Camera.getInstance().getTransform(getSize()));
 
 			for (LogicGate curGate : layout.getLogicGates()) {
 				g2d.drawImage(curGate.getImage(), curGate.getLocation().x, curGate.getLocation().y, null);
@@ -421,7 +376,7 @@ public class VerilogDrawerUI {
 
 					// Draw the wire form the selected output port to the mouse pointer
 					Point fromLoc = from.getLocation();
-					drawGeometricWire(g2d, fromLoc, mouseLocation, Color.BLACK);
+					drawGeometricWire(g2d, fromLoc, mouseLocationOnPlane, Color.BLACK);
 				}
 			}
 			default -> {
@@ -432,21 +387,28 @@ public class VerilogDrawerUI {
 		}
 
 		private class MouseHandler extends MouseAdapter {
+
+			private void updateMouseLocation(Point mouseLoc) {
+				mouseLocationOnPanel = mouseLoc;
+				mouseLocationOnPlane = Camera.getInstance().transformPoint(mouseLoc, getSize());
+			}
+
 			@Override
 			public void mouseClicked(MouseEvent e) {
-				Point clickLocation = e.getPoint();
+				updateMouseLocation(e.getPoint());
 
 				switch (mouseAction.getType()) {
 				case IDLE -> {
 					for (LogicGate curGate : layout.getLogicGates()) {
-						if (curGate.getLocation().x < clickLocation.x && curGate.getLocation().y < clickLocation.y) {
-							if (curGate.getLocation().x + curGate.getSize().width > clickLocation.x
-									&& curGate.getLocation().y + curGate.getSize().height > clickLocation.y) {
+						if (curGate.getLocation().x < mouseLocationOnPlane.x
+								&& curGate.getLocation().y < mouseLocationOnPlane.y) {
+							if (curGate.getLocation().x + curGate.getSize().width > mouseLocationOnPlane.x
+									&& curGate.getLocation().y + curGate.getSize().height > mouseLocationOnPlane.y) {
 								if (e.getButton() == MouseEvent.BUTTON1) {
-									mouseAction = new MoveGateAction(curGate, clickLocation);
+									mouseAction = new MoveGateAction(curGate, mouseLocationOnPlane);
 								} else if (e.getButton() == MouseEvent.BUTTON3) {
 									JDialog dialog = curGate.getEditDialog(frame);
-									dialog.setLocation(clickLocation.x, clickLocation.y);
+									dialog.setLocation(mouseLocationOnPanel.x, mouseLocationOnPanel.y);
 									dialog.setVisible(true);
 								}
 								break;
@@ -467,12 +429,12 @@ public class VerilogDrawerUI {
 					DrawWireAction dwa = (DrawWireAction) mouseAction;
 
 					if (dwa.getSignalComponentFrom() == null) {
-						SignalComponent from = layout.getSignalAvailableComponentAt(clickLocation);
+						SignalComponent from = layout.getSignalAvailableComponentAt(mouseLocationOnPlane);
 						if (from != null) {
 							dwa.setSignalComponentFrom(from);
 						}
 					} else {
-						SignalComponent to = layout.getSignalAvailableComponentAt(clickLocation);
+						SignalComponent to = layout.getSignalAvailableComponentAt(mouseLocationOnPlane);
 						if (to != null) {
 							Wire newWire = new Wire(dwa.getSignalComponentFrom(), to);
 							layout.addWire(newWire);
@@ -489,7 +451,7 @@ public class VerilogDrawerUI {
 
 			@Override
 			public void mouseMoved(MouseEvent e) {
-				mouseLocation = e.getPoint();
+				updateMouseLocation(e.getPoint());
 
 				switch (mouseAction.getType()) {
 				case IDLE -> {
@@ -497,15 +459,15 @@ public class VerilogDrawerUI {
 				case CREATE_GATE -> {
 					CreateGateAction cga = (CreateGateAction) mouseAction;
 					LogicGate gate = cga.getGate();
-					gate.setLocation(new Point(mouseLocation.x - gate.getSize().width / 2,
-							mouseLocation.y - gate.getSize().height / 2));
+					gate.setLocation(new Point(mouseLocationOnPlane.x - gate.getSize().width / 2,
+							mouseLocationOnPlane.y - gate.getSize().height / 2));
 				}
 				case MOVE_GATE -> {
 					MoveGateAction mga = (MoveGateAction) mouseAction;
 					LogicGate selected = mga.getGate();
 
-					int dx = mouseLocation.x - mga.getInitialMouseLocation().x;
-					int dy = mouseLocation.y - mga.getInitialMouseLocation().y;
+					int dx = mouseLocationOnPlane.x - mga.getInitialMouseLocation().x;
+					int dy = mouseLocationOnPlane.y - mga.getInitialMouseLocation().y;
 
 					selected.setLocation(
 							new Point(mga.getInitialGateLocation().x + dx, mga.getInitialGateLocation().y + dy));
@@ -518,6 +480,23 @@ public class VerilogDrawerUI {
 				}
 				}
 			}
+
+			public void mouseDragged(MouseEvent e) {
+				Point newMouseLocationOnPanel = e.getPoint();
+
+				if (SwingUtilities.isRightMouseButton(e)) {
+					int deltaX = newMouseLocationOnPanel.x - mouseLocationOnPanel.x;
+					int deltaY = newMouseLocationOnPanel.y - mouseLocationOnPanel.y;
+					Camera.getInstance().pan(deltaX, deltaY);
+				}
+
+				updateMouseLocation(e.getPoint());
+			};
+
+			public void mouseWheelMoved(MouseWheelEvent e) {
+				double rotation = -e.getPreciseWheelRotation();
+				Camera.getInstance().zoom(rotation);
+			};
 		}
 	}
 }

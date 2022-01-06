@@ -45,9 +45,7 @@ public class ComboGate extends LogicGate {
 	private LinkedHashMap<GateSignalPort, Input> inputs;
 	private LinkedHashMap<Output, GateSignalPort> outputs;
 
-	public ComboGate(Point location, String defaultName, GateLayout layout) {
-		super(location);
-
+	public ComboGate(String defaultName, GateLayout layout) {
 		this.name = defaultName;
 
 		logicGates = new HashSet<LogicGate>(layout.getLogicGates());
@@ -187,6 +185,7 @@ public class ComboGate extends LogicGate {
 		outerPanel.add(createEditDialogLowerBar(dialog, () -> {
 			// Update the name
 			name = nameField.getText();
+			return true;
 		}), BorderLayout.SOUTH);
 
 		dialog.add(outerPanel);

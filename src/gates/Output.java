@@ -35,10 +35,8 @@ public class Output extends LogicGate {
 
 	private final GateSignalPort input;
 
-	public Output(Point position, String name) {
-		super(position);
-		this.name = name;
-
+	public Output() {
+		this.name = "XYZ";
 		input = new GateSignalPort(this, new Point(10, 20), SignalComponent.Direction.INPUT);
 	}
 
@@ -143,6 +141,7 @@ public class Output extends LogicGate {
 
 			// Update the signal width
 			input.setSignalWidth((int) dataWidthField.getModel().getValue());
+			return true;
 		}), BorderLayout.SOUTH);
 
 		dialog.add(outerPanel);
