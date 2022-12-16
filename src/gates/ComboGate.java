@@ -55,7 +55,10 @@ public class ComboGate extends LogicGate {
 		ArrayList<Output> sortedOutputGates = new ArrayList<Output>();
 		for (LogicGate curGate : logicGates) {
 			if (curGate instanceof Input) {
-				sortedInputGates.add((Input) curGate);
+				Input curInput = (Input) curGate;
+				if (curInput.isExposedExternally()) {
+					sortedInputGates.add(curInput);
+				}
 			} else if (curGate instanceof Output) {
 				sortedOutputGates.add((Output) curGate);
 			}
@@ -70,14 +73,18 @@ public class ComboGate extends LogicGate {
 		int curY = PORT_SPACING * 2;
 		inputs = new LinkedHashMap<GateSignalPort, Input>();
 		for (Input curInputGate : sortedInputGates) {
-			inputs.put(new GateSignalPort(this, new Point(10, curY), Direction.INPUT), curInputGate);
+			GateSignalPort gsp = new GateSignalPort(this, new Point(10, curY), Direction.INPUT);
+			gsp.setSignalWidth(curInputGate.exposeSignalPorts()[0].getSignalWidth());
+			inputs.put(gsp, curInputGate);
 			curY += PORT_SPACING;
 		}
 
 		curY = PORT_SPACING * 2;
 		outputs = new LinkedHashMap<Output, GateSignalPort>();
 		for (Output curOutputGate : sortedOutputGates) {
-			outputs.put(curOutputGate, new GateSignalPort(this, new Point(90, curY), Direction.OUTPUT));
+			GateSignalPort gsp = new GateSignalPort(this, new Point(90, curY), Direction.OUTPUT);
+			gsp.setSignalWidth(curOutputGate.exposeSignalPorts()[0].getSignalWidth());
+			outputs.put(curOutputGate, gsp);
 			curY += PORT_SPACING;
 		}
 	}

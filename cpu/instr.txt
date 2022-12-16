@@ -1,0 +1,11 @@
+00  xx  yy  zz
+add in1 in2 out
+
+01  xx  yy  zz
+sub in1 in2 out
+
+10  xx  aaaa
+jze reg addr-off
+
+11  zz  vvvv
+lod reg val

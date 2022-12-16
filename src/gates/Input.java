@@ -18,6 +18,7 @@ import javax.swing.BorderFactory;
 import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 import javax.swing.JDialog;
 import javax.swing.JFrame;
@@ -32,11 +33,13 @@ import javax.swing.event.ChangeListener;
 public class Input extends LogicGate {
 
 	private String name;
+	private boolean exposeExternally;
 
 	private final GateSignalPort output;
 
 	public Input() {
 		this.name = "ABC";
+		this.exposeExternally = true;
 		output = new GateSignalPort(this, new Point(90, 20), SignalComponent.Direction.OUTPUT);
 	}
 
@@ -111,6 +114,10 @@ public class Input extends LogicGate {
 		return name;
 	}
 
+	public boolean isExposedExternally() {
+		return exposeExternally;
+	}
+
 	@Override
 	public JDialog getEditDialog(JFrame owner) {
 		JDialog dialog = new JDialog(owner, "Edit Input", true);
@@ -136,9 +143,16 @@ public class Input extends LogicGate {
 		JSpinner dataWidthField = new JSpinner(
 				new SpinnerNumberModel(output.getSignalWidth(), 1, Integer.MAX_VALUE, 1));
 		upperDataWidthPanel.add(dataWidthField);
-
 		upperConfigurationPanel.add(upperDataWidthPanel);
-
+		
+		JPanel upperExposeExternallyPanel = new JPanel();
+		upperExposeExternallyPanel.setLayout(new BoxLayout(upperExposeExternallyPanel, BoxLayout.X_AXIS));
+		upperExposeExternallyPanel.add(new JLabel("Expose Externally: "));
+		JCheckBox exposeExternallyCheckbox = new JCheckBox("", exposeExternally);
+		upperExposeExternallyPanel.add(exposeExternallyCheckbox);
+		upperExposeExternallyPanel.add(Box.createHorizontalGlue());
+		upperConfigurationPanel.add(upperExposeExternallyPanel);
+		
 		outerPanel.add(upperConfigurationPanel, BorderLayout.NORTH);
 
 		ArrayList<JPanel> labelAndInputPanels = new ArrayList<JPanel>();
@@ -198,6 +212,9 @@ public class Input extends LogicGate {
 
 			// Update the output signal width
 			output.setSignalWidth(booleanSelectors.size());
+			
+			// Update the expose externally boolean
+			exposeExternally = exposeExternallyCheckbox.isSelected();
 
 			// Update the output signal
 			boolean[] newOutputSignal = new boolean[booleanSelectors.size()];
